@@ -1,160 +1,144 @@
-# Chapter 02 - Manage Software
+# Chapter 2: Manage Software
 
-## Overview
+## Objective
 
-Manage software using RPM and DNF.
-
-### Exam Objectives
-
-- Configure access to RPM repositories
-- Install and remove RPM software packages
-- Configure access to Flatpak repositories
-- Install and remove Flatpak software packages
+Learn how software is managed on Red Hat Enterprise Linux using RPM, DNF, repositories, and Flatpak.
 
 ---
 
-## Package Management Concepts
+# RPM vs DNF
 
-### RPM
+## RPM (Red Hat Package Manager)
 
-- Low-level package manager.
-- Works with installed RPM packages.
-- Maintains the local RPM database.
-- Does not resolve dependencies.
-- Does not download packages.
+RPM is the low-level package management system in RHEL.
 
-### DNF
+It can:
 
-- High-level package manager.
-- Searches repositories.
-- Resolves dependencies.
-- Downloads packages.
-- Verifies package signatures.
-- Uses RPM to perform package installation.
+- Install RPM packages
+- Remove packages
+- Query installed packages
+- Verify packages
 
-### DNF vs RPM
+RPM does **not** resolve dependencies or download packages from repositories.
 
-| DNF | RPM |
+### Syntax
+
+```bash
+rpm [options]
+```
+
+---
+
+## DNF (Dandified Yum)
+
+DNF is the high-level package manager that uses RPM underneath.
+
+DNF can:
+
+- Search packages
+- Install software
+- Remove software
+- Update software
+- Resolve dependencies
+- Access repositories
+- Manage package transactions
+
+---
+
+# RPM vs DNF
+
+| RPM | DNF |
 |------|-----|
-| High-level package manager | Low-level package manager |
-| Resolves dependencies | Does not resolve dependencies |
-| Downloads packages | Does not download packages |
-| Searches repositories | Queries installed packages |
-| Uses RPM internally | Performs package operations |
+| Low-level package manager | High-level package manager |
+| Works directly with RPM packages | Uses repositories |
+| No dependency resolution | Resolves dependencies automatically |
+| No repository support | Supports repositories |
+| Uses RPM database | Uses RPM underneath |
 
 ---
 
-## Repository Concepts
+# Repository
 
-### Repository
+A repository is a centralized storage location that contains RPM packages and metadata.
 
-- Collection of RPM packages.
-- Contains repository metadata.
-- Packages are installed from repositories.
+DNF communicates with repositories whenever software is searched, installed, updated, or removed.
 
-### Repository Metadata
+---
+
+# Repository Metadata
+
+Repository metadata contains information required by DNF.
+
+It includes:
 
 - Package names
 - Versions
 - Dependencies
+- Architecture
 - Checksums
-- Signatures
+- Repository information
+
+DNF downloads metadata first before performing package operations.
 
 ---
 
-## Repository Commands
+# BaseOS Repository
 
-### List Repositories
+Contains the core operating system packages.
 
-- Displays enabled repositories.
+Examples:
 
-- **Syntax**
+- Kernel
+- Bash
+- Core utilities
+- System libraries
 
-```bash
-dnf repolist
-```
-
-- **Example**
-
-```bash
-dnf repolist
-```
-
-- **Notes**
-
-Displays repositories such as BaseOS and AppStream.
+These packages form the operating system.
 
 ---
 
-### Search Packages
+# AppStream Repository
 
-- Search repositories for packages.
+Contains user-space applications and development software.
 
-- **Syntax**
+Examples:
 
-```bash
-dnf search <package>
-```
+- Databases
+- Programming languages
+- Web servers
+- Editors
+- Runtime environments
 
-- **Examples**
-
-```bash
-dnf search tmux
-dnf search wget
-dnf search tree
-```
-
-- **Notes**
-
-Searches repositories, not installed packages.
+AppStream evolves independently from BaseOS.
 
 ---
 
-### Package Information
+# DNF Transaction Workflow
 
-- Show package details.
+Every install, remove, reinstall, or update is performed as a transaction.
 
-- **Syntax**
+Workflow:
 
-```bash
-dnf info <package>
-```
-
-- **Example**
-
-```bash
-dnf info tmux
-```
-
-- **Notes**
-
-If installed:
-
-```
-Installed Packages
-```
-
-If available but not installed:
-
-```
-Available Packages
-```
+1. Read repository metadata
+2. Find requested package
+3. Resolve dependencies
+4. Build transaction
+5. Show transaction summary
+6. Ask for confirmation
+7. Execute transaction
+8. Update RPM database
 
 ---
 
-## RPM Query Commands
+# Package Queries
 
-### Check Installed Package
-
-- Determine whether a package is installed.
-
-- **Syntax**
+## Check if a package is installed
 
 ```bash
-rpm -q <package>
+rpm -q package
 ```
 
-- **Example**
+Example
 
 ```bash
 rpm -q tmux
@@ -162,139 +146,283 @@ rpm -q tmux
 
 ---
 
-### List Files Installed by a Package
-
-- Lists every file belonging to an installed package.
-
-- **Syntax**
+## List files installed by a package
 
 ```bash
-rpm -ql <package>
+rpm -ql package
 ```
 
-- **Example**
+Example
 
 ```bash
-rpm -ql tmux
+rpm -ql openssh-server
 ```
 
 ---
 
-### Find Package Owning a File
-
-- Determine which package owns a file.
-
-- **Syntax**
+## Find which package owns a file
 
 ```bash
-rpm -qf <file>
+rpm -qf /path/to/file
 ```
 
-- **Example**
+Example
 
 ```bash
-rpm -qf /usr/bin/tmux
+rpm -qf /usr/bin/passwd
 ```
 
 ---
 
-## Installing Packages
+# Repository Commands
 
-### Install Package
-
-- Install a package from configured repositories.
-
-- **Syntax**
+## List enabled repositories
 
 ```bash
-dnf install <package>
-```
-
-- **Example**
-
-```bash
-dnf install tmux
+dnf repolist
 ```
 
 ---
 
-## DNF Transaction Workflow
-
-When running:
+## Search packages
 
 ```bash
-dnf install tmux
+dnf search keyword
 ```
 
-DNF performs the following steps:
+Example
 
-1. Contact Subscription Manager.
-2. Read repository metadata.
-3. Resolve dependencies.
-4. Build the transaction.
-5. Download RPM packages.
-6. Perform transaction check.
-7. Perform transaction test.
-8. Call RPM.
-9. Install package files.
-10. Run package scriptlets.
-11. Update RPM database.
-12. Complete the transaction.
+```bash
+dnf search nginx
+```
 
 ---
 
-## Download Size vs Installed Size
+## Package information
 
-### Download Size
+```bash
+dnf info package
+```
 
-Compressed RPM downloaded from repository.
+Example
 
-### Installed Size
-
-Actual disk space consumed after extraction.
-
----
-
-## Important Notes
-
-- Repository metadata is not the package itself.
-- RPM never downloads dependencies.
-- DNF uses RPM internally.
-- Think in terms of questions:
-
-| Question | Command |
-|----------|---------|
-| Is package installed? | `rpm -q` |
-| What files belong to package? | `rpm -ql` |
-| Which package owns this file? | `rpm -qf` |
-| Is package available? | `dnf search` |
-| Package details? | `dnf info` |
+```bash
+dnf info httpd
+```
 
 ---
 
-## Progress
+# Install Packages
 
-### Completed
+```bash
+sudo dnf install package
+```
 
-- RPM vs DNF
-- Repository concepts
-- Repository metadata
-- BaseOS vs AppStream
-- dnf repolist
-- dnf search
-- dnf info
-- rpm -q
-- rpm -ql
-- rpm -qf
-- dnf install
-- DNF transaction workflow
+Example
 
-### Remaining
+```bash
+sudo dnf install tree
+```
 
-- dnf remove
-- dnf reinstall
-- dnf update
-- Local RPM installation
-- Configure RPM repositories
-- Configure Flatpak repositories
-- Install/remove Flatpak packages
+DNF automatically resolves dependencies.
+
+---
+
+# Remove Packages
+
+```bash
+sudo dnf remove package
+```
+
+Example
+
+```bash
+sudo dnf remove tree
+```
+
+DNF checks dependencies before removing packages.
+
+---
+
+# Reinstall Packages
+
+Reinstalls an already installed package.
+
+```bash
+sudo dnf reinstall package
+```
+
+Example
+
+```bash
+sudo dnf reinstall tmux
+```
+
+Useful when package files become corrupted.
+
+---
+
+# Update Packages
+
+Update every installed package
+
+```bash
+sudo dnf update
+```
+
+Update one package
+
+```bash
+sudo dnf update bash
+```
+
+DNF compares installed versions against repository versions before performing updates.
+
+---
+
+# Local RPM Installation
+
+Install a local RPM file using DNF
+
+```bash
+sudo dnf install ./package.rpm
+```
+
+or
+
+```bash
+sudo dnf localinstall package.rpm
+```
+
+Using DNF is preferred because it resolves dependencies automatically.
+
+RPM can also install local packages:
+
+```bash
+sudo rpm -ivh package.rpm
+```
+
+However, RPM does not resolve dependencies.
+
+---
+
+# Configure RPM Repositories
+
+Repository configuration files are stored in
+
+```text
+/etc/yum.repos.d/
+```
+
+Repository files use the `.repo` extension.
+
+Example
+
+```text
+example.repo
+```
+
+Common repository options
+
+- name
+- baseurl
+- enabled
+- gpgcheck
+- gpgkey
+
+List enabled repositories
+
+```bash
+dnf repolist
+```
+
+---
+
+# Flatpak
+
+Flatpak is a package management system for desktop applications.
+
+Applications run inside isolated sandboxes.
+
+Flatpak applications are independent of traditional RPM packages.
+
+---
+
+# Configure Flatpak Repository
+
+Add Flathub
+
+```bash
+flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+```
+
+List configured remotes
+
+```bash
+flatpak remotes
+```
+
+---
+
+# Search Flatpak Packages
+
+```bash
+flatpak search package
+```
+
+Example
+
+```bash
+flatpak search vlc
+```
+
+---
+
+# Install Flatpak Package
+
+```bash
+flatpak install flathub package-name
+```
+
+Example
+
+```bash
+flatpak install flathub org.videolan.VLC
+```
+
+---
+
+# Remove Flatpak Package
+
+```bash
+flatpak uninstall package-name
+```
+
+Example
+
+```bash
+flatpak uninstall org.videolan.VLC
+```
+
+---
+
+# Update Flatpak Packages
+
+```bash
+flatpak update
+```
+
+---
+
+# Key Takeaways
+
+- RPM is the low-level package manager.
+- DNF is the high-level package manager built on top of RPM.
+- DNF resolves dependencies and manages repositories.
+- Repository metadata allows DNF to locate and resolve packages.
+- BaseOS contains core operating system packages.
+- AppStream contains user applications and development software.
+- Every DNF operation is executed as a transaction.
+- Prefer DNF over RPM for package installation.
+- Repository files are stored in `/etc/yum.repos.d/`.
+- Flatpak manages sandboxed desktop applications independently of RPM.
